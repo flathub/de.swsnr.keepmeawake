@@ -7,19 +7,30 @@ jobs:
     name: Sync from swsnr/keep-me-awake
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: "curl -sSfL https://codeberg.org/swsnr/keep-me-awake/raw/branch/main/flatpak/de.swsnr.keepmeawake.yaml > de.swsnr.keepmeawake.yaml"
-      - run: "curl -sSfL https://codeberg.org/swsnr/keep-me-awake/raw/branch/main/flatpak/de.swsnr.keepmeawake.cargo-sources.json > de.swsnr.keepmeawake.cargo-sources.json"
+      - uses: actions/checkout@v5
+        with:
+          path: flathub
+      - run: "git clone --depth 1 --single-branch --branch main --sparse https://codeberg.org/swsnr/keep-me-awake.git"
+      - run: "git -C keep-me-awake sparse-checkout add flatpak"
+      - run: "cp -t flathub keep-me-awake/flatpak/de.swsnr.keepmeawake.yaml keep-me-awake/flatpak/de.swsnr.keepmeawake.cargo-sources.json"
+      - run: 'echo short_ref="$(git -C keep-me-awake rev-parse --short=7 HEAD)"'
+        id: revparse_short
+      - run: 'echo commit_hash="$(git -C keep-me-awake rev-parse HEAD)" >> "${GITHUB_OUTPUT}"'
+        id: revparse
       - uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "Update from swsnr/keep-me-awake"
+          path: flathub
+          commit-message: |
+            Update from swsnr/keep-me-awake@${{steps.revparse_short.outputs.short_ref}}
+
+            Update from https://codeberg.org/swsnr/keep-me-awake/commit/${{steps.revparse.outputs.commit_hash}}
           branch: swsnr/keep-me-awake/update
           delete-branch: true
           base: master
           sign-commits: true
-          title: Update manifest from upstream
+          title: Update manifest from swsnr/keep-me-awake
           body: |
-            Update flatpak manifest from [swsnr/keep-me-awake](https://codeberg.org/swsnr/keep-me-awake).
+            Update flatpak manifest from [swsnr/keep-me-awake@${{steps.revparse_short.outputs.short_ref}}](https://codeberg.org/swsnr/keep-me-awake/commit/${{steps.revparse.outputs.commit_hash}}).
 
             PR created by [sync workflow](https://github.com/flathub/de.swsnr.keepmeawake/actions/workflows/sync.yaml)
           assignees: swsnr
