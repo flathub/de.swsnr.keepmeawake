@@ -13,7 +13,7 @@ jobs:
       - run: "git clone --depth 1 --single-branch --branch main --sparse https://codeberg.org/swsnr/keep-me-awake.git"
       - run: "git -C keep-me-awake sparse-checkout add flatpak"
       - run: "cp -t flathub keep-me-awake/flatpak/de.swsnr.keepmeawake.yaml keep-me-awake/flatpak/de.swsnr.keepmeawake.cargo-sources.json"
-      - run: 'echo short_ref="$(git -C keep-me-awake rev-parse --short=7 HEAD)"'
+      - run: 'echo short_ref="$(git -C keep-me-awake rev-parse --short=7 HEAD)" >> "${GITHUB_OUTPUT}"'
         id: revparse_short
       - run: 'echo commit_hash="$(git -C keep-me-awake rev-parse HEAD)" >> "${GITHUB_OUTPUT}"'
         id: revparse
